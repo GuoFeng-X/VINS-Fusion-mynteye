@@ -137,6 +137,15 @@ cd ~/catkin_ws/src/VINS-Fusion/camera_models/camera_calib_example/
 rosrun camera_models Calibrations -w 12 -h 8 -s 80 -i calibrationdata --camera-model pinhole
 ```
 
+### 6.3 Run VINS-Fusion in mynteye-stereo
+录制自己的数据包，可以使用双目，单目等(图像话题可使用压缩后的图像，后续解压即可)。设置IMU与相机之间内参和外参，可以使用在线自标定完成T_il或T_ir的参数。
+```
+roslaunch vins vins_rviz.launch
+rosrun vins vins_node ~/catkin_ws/src/VINS-Fusion/config/mynteye_wind/mynteye_stereo_imu_config.yaml
+rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/mynteye_wind/mynteye_stereo_imu_config.yaml
+rosbag play wind_19.bag
+```
+
 ## 7. Docker Support
 To further facilitate the building process, we add docker in our code. Docker environment is like a sandbox, thus makes our code environment-independent. To run with docker, first make sure [ros](http://wiki.ros.org/ROS/Installation) and [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) are installed on your machine. Then add your account to `docker` group by `sudo usermod -aG docker $YOUR_USER_NAME`. **Relaunch the terminal or logout and re-login if you get `Permission denied` error**, type:
 ```
