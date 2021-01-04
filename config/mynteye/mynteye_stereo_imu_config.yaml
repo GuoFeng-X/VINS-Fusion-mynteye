@@ -13,8 +13,7 @@ output_path: "/home/tong/output/"
 cam0_calib: "left_mei.yaml"
 cam1_calib: "right_mei.yaml"
 image_width: 752
-image_height: 480
-   
+image_height: 480  
 
 # Extrinsic parameter between IMU and Camera.
 estimate_extrinsic: 0   # 0  Have an accurate extrinsic parameters. We will trust the following imu^R_cam, imu^T_cam, don't change it.
