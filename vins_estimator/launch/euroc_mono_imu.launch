@@ -1,0 +1,18 @@
+<launch>
+    <!-- <node name="image_transport_node" pkg="image_transport" type="republish" args="compressed in:=/mynteye/left/image_color raw out:=/mynteye/left/image_color" /> -->
+    <!-- <node name="image_transport_node1" pkg="image_transport" type="republish" args="compressed in:=/mynteye/right/image_color raw out:=/mynteye/right/image_color" /> -->
+    <node name="rvizvisualisation" pkg="rviz" type="rviz" output="log" args="-d $(find vins)/../config/vins_rviz_config.rviz" />
+    
+    
+    <!-- 根据euroc序列不同进行改动config文件 -->
+    <arg name="config_file" default = "$(find vins)/../config/euroc/euroc_mono_imu_config.yaml" />
+
+    <node pkg="vins" type="vins_node" name="vins_estimator" output="screen">
+        <param name="config_path" type="string" value="$(arg config_file)" />
+    </node>
+    
+    <node pkg="loop_fusion" type="loop_fusion_node" name="loop_fusion" output="screen">
+        <param name="config_path" type="string" value="$(arg config_file)" />
+    </node>
+
+</launch>

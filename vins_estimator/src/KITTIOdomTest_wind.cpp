@@ -125,16 +125,22 @@ int main(int argc, char** argv)
 	ros::NodeHandle n("~");
 	ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info);
 
-	if(argc != 2)
-	{
-		printf("please intput: rosrun vins kitti_odom_test [config file] [data folder] \n"
-			   "for example: rosrun vins kitti_odom_test "
-			   "~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml \n");
-		return 1;
-	}
+	// if(argc != 1)
+	// {
+	// 	printf("please intput: rosrun vins kitti_odom_test [config file] [data folder] \n"
+	// 		   "for example: rosrun vins kitti_odom_test "
+	// 		   "~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml \n");
+	// 	return 1;
+	// }
 
-	string config_file = argv[1];
-	printf("config_file: %s\n", argv[1]);
+
+	// string config_file = argv[1];
+	// printf("config_file: %s\n", argv[1]);
+
+	string config_file;
+	n.getParam("config_path", config_file);
+	std::cout<<"config_file: "<<config_file<<std::endl;
+	// printf("config_file: %s\n", config_file);
 
 
 	readParameters(config_file);

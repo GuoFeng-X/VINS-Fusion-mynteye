@@ -67,6 +67,13 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
+using this
+```
+    roslaunch vins euroc_mono_imu.launch
+    rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
+```
+
+
 ### 3.2 Stereo cameras + IMU
 
 ```
@@ -76,12 +83,23 @@ Green path is VIO odometry; red path is odometry under visual loop closure.
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
+using this
+```
+    roslaunch vins euroc_stereo_imu.launch
+    rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
+```
+
 ### 3.3 Stereo cameras
 
 ```
     roslaunch vins vins_rviz.launch
     rosrun vins vins_node ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_config.yaml 
     (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/euroc/euroc_stereo_config.yaml 
+    rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
+```
+using this
+```
+    roslaunch vins euroc_stereo.launch
     rosbag play YOUR_DATASET_FOLDER/MH_01_easy.bag
 ```
 
@@ -98,6 +116,14 @@ Open two terminals, run vins and rviz respectively.
     (optional) rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml
     rosrun vins kitti_odom_test ~/catkin_ws/src/VINS-Fusion/config/kitti_odom/kitti_config00-02.yaml YOUR_DATASET_FOLDER/sequences/00/ 
 ```
+
+or using this
+```
+    roslaunch vins kitti_stereo.launch
+    rosbag play kitti_odometry_sequence_01.bag 
+```
+
+
 ### 4.2 KITTI GPS Fusion (Stereo + GPS)
 Download [KITTI raw dataset](http://www.cvlibs.net/datasets/kitti/raw_data.php) to YOUR_DATASET_FOLDER. Take [2011_10_03_drive_0027_synced](https://s3.eu-central-1.amazonaws.com/avg-kitti/raw_data/2011_10_03_drive_0027/2011_10_03_drive_0027_sync.zip) for example.
 Open three terminals, run vins, global fusion and rviz respectively. 
@@ -145,6 +171,19 @@ rosrun vins vins_node ~/catkin_ws/src/VINS-Fusion/config/mynteye_wind/mynteye_st
 rosrun loop_fusion loop_fusion_node ~/catkin_ws/src/VINS-Fusion/config/mynteye_wind/mynteye_stereo_imu_config.yaml
 rosbag play wind_19.bag
 ```
+
+Stereo using this
+```
+    roslaunch vins mynteye_stereo_imu.launch
+    rosbag play wind_19.bag
+```
+
+Mono using this
+```
+    roslaunch vins mynteye_mono_imu.launch
+    rosbag play wind_19.bag
+```
+
 
 ## 7. Docker Support
 To further facilitate the building process, we add docker in our code. Docker environment is like a sandbox, thus makes our code environment-independent. To run with docker, first make sure [ros](http://wiki.ros.org/ROS/Installation) and [docker](https://docs.docker.com/install/linux/docker-ce/ubuntu/) are installed on your machine. Then add your account to `docker` group by `sudo usermod -aG docker $YOUR_USER_NAME`. **Relaunch the terminal or logout and re-login if you get `Permission denied` error**, type:
