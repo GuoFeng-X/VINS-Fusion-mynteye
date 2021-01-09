@@ -11,13 +11,14 @@
 
 using namespace ros;
 using namespace Eigen;
-ros::Publisher pub_odometry, pub_latest_odometry;
-ros::Publisher pub_path;
+ros::Publisher pub_odometry, pub_latest_odometry, pub_odometry_wind;
+ros::Publisher pub_path, pub_path_wind;
 ros::Publisher pub_point_cloud, pub_margin_cloud;
 ros::Publisher pub_key_poses;
 ros::Publisher pub_camera_pose;
 ros::Publisher pub_camera_pose_visual;
 nav_msgs::Path path;
+nav_msgs::Path path_wind;
 
 ros::Publisher pub_keyframe_pose;
 ros::Publisher pub_keyframe_point;
@@ -35,7 +36,9 @@ void registerPub(ros::NodeHandle &n)
 {
     pub_latest_odometry = n.advertise<nav_msgs::Odometry>("imu_propagate", 1000);
     pub_path = n.advertise<nav_msgs::Path>("path", 1000);
+    pub_path_wind = n.advertise<nav_msgs::Path>("path_wind", 1000);
     pub_odometry = n.advertise<nav_msgs::Odometry>("odometry", 1000);
+    pub_odometry_wind = n.advertise<nav_msgs::Odometry>("odometry_wind", 1000);
     pub_point_cloud = n.advertise<sensor_msgs::PointCloud>("point_cloud", 1000);
     pub_margin_cloud = n.advertise<sensor_msgs::PointCloud>("margin_cloud", 1000);
     pub_key_poses = n.advertise<visualization_msgs::Marker>("key_poses", 1000);
@@ -174,8 +177,95 @@ void pubOdometry(const Estimator &estimator, const std_msgs::Header &header)
               << estimator.Vs[WINDOW_SIZE].z() << "," << endl;
         foutC.close();
         Eigen::Vector3d tmp_T = estimator.Ps[WINDOW_SIZE];
+
+
         // printf("time: %f, t: %f %f %f q: %f %f %f %f \n", header.stamp.toSec(), tmp_T.x(), tmp_T.y(), tmp_T.z(),
         //                                                   tmp_Q.w(), tmp_Q.x(), tmp_Q.y(), tmp_Q.z());
+    }
+}
+
+
+void pubOdometry_wind(const Estimator &estimator, const std_msgs::Header &header)
+{
+    if (estimator.solver_flag == Estimator::SolverFlag::NON_LINEAR)
+    {
+        nav_msgs::Odometry odometry;
+        odometry.header = header;
+        odometry.header.frame_id = "/camera_init";
+        odometry.child_frame_id = "/camera_init";
+
+        Eigen::Matrix3d R_cl;
+        R_cl << 4.276802385584e-04, -9.999672484946e-01, -8.084491683471e-03, -7.210626507497e-03, 8.081198471645e-03,
+         -9.999413164504e-01, 9.999738645903e-01, 4.859485810390e-04, -7.206933692422e-03;
+
+        Eigen::Vector3d t_cl;
+        t_cl << -1.198459927713e-02, -5.403984729748e-02, -2.921968648686e-01;
+
+        Eigen::AngleAxisd x_rotation_vector(-M_PI/2, Eigen::Vector3d(1,0,0));
+        Quaterniond tmp_x(x_rotation_vector);
+        Eigen::AngleAxisd y_rotation_vector(M_PI/2, Eigen::Vector3d(0,1,0));
+        Quaterniond tmp_y(y_rotation_vector);
+
+        Eigen::Isometry3d T_cl = Eigen::Isometry3d::Identity();
+        T_cl.rotate(R_cl);
+        T_cl.pretranslate(t_cl);
+
+        Quaterniond tmp_Q;
+        tmp_Q = Quaterniond(estimator.Rs[WINDOW_SIZE]);
+
+        Eigen::Vector3d temp_P = estimator.Ps[WINDOW_SIZE];
+
+        Eigen::Isometry3d T_wc = Eigen::Isometry3d::Identity();
+        T_wc.rotate(tmp_Q);
+        T_wc.pretranslate(temp_P);
+
+        Eigen::Isometry3d T_wb = Eigen::Isometry3d::Identity();
+        T_wb.rotate(tmp_x * tmp_y);
+
+        Eigen::Isometry3d T_wl = T_wb * T_wc;
+        T_wl = T_wl * T_cl;
+
+        temp_P = T_wl.matrix().block(0,3,3,1);
+        Eigen::Matrix3d R = T_wl.matrix().block(0,0,3,3);
+        tmp_Q = Eigen::Quaterniond(R);
+
+
+        odometry.pose.pose.position.x = temp_P.x();
+        odometry.pose.pose.position.y = temp_P.y();
+        odometry.pose.pose.position.z = temp_P.z();
+        odometry.pose.pose.orientation.x = tmp_Q.x();
+        odometry.pose.pose.orientation.y = tmp_Q.y();
+        odometry.pose.pose.orientation.z = tmp_Q.z();
+        odometry.pose.pose.orientation.w = tmp_Q.w();
+        odometry.twist.twist.linear.x = estimator.Vs[WINDOW_SIZE].x();
+        odometry.twist.twist.linear.y = estimator.Vs[WINDOW_SIZE].y();
+        odometry.twist.twist.linear.z = estimator.Vs[WINDOW_SIZE].z();
+        pub_odometry_wind.publish(odometry);
+
+        geometry_msgs::PoseStamped pose_stamped;
+        pose_stamped.header = header;
+        pose_stamped.header.frame_id = "/camera_init";
+        pose_stamped.pose = odometry.pose.pose;
+        path_wind.header = header;
+        path_wind.header.frame_id = "/camera_init";
+        path_wind.poses.push_back(pose_stamped);
+        pub_path_wind.publish(path_wind);
+
+        // write result to file
+        ofstream foutC("/home/lenovo/桌面/wind.txt", ios::app);
+        foutC.setf(ios::fixed, ios::floatfield);
+        foutC.precision(0);
+        foutC << header.stamp.toSec() * 1e9 << ",";
+        foutC.precision(5);
+        foutC << temp_P.x() << ","
+              << temp_P.y() << ","
+              << temp_P.z() << ","
+              << tmp_Q.w() << ","
+              << tmp_Q.x() << ","
+              << tmp_Q.y() << ","
+              << tmp_Q.z() << endl;
+        foutC.close();
+
     }
 }
 

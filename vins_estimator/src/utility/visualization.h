@@ -48,6 +48,7 @@ void pubTrackImage(const cv::Mat &imgTrack, const double t);
 void printStatistics(const Estimator &estimator, double t);
 
 void pubOdometry(const Estimator &estimator, const std_msgs::Header &header);
+void pubOdometry_wind(const Estimator &estimator, const std_msgs::Header &header);
 
 void pubInitialGuess(const Estimator &estimator, const std_msgs::Header &header);
 
